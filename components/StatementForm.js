@@ -4,44 +4,56 @@ import * as Yup from "yup";
 import { useState } from "react";
 
 const ConsultingSchema = Yup.object().shape({
-  start_date: Yup.date().required('Start Date is required'),
-  end_date: Yup.date().required('End Date is required'),
-  email: Yup.string().email('Invalid email address').required('Email is required'),
+  start_date: Yup.date().required("Start Date is required"),
+  end_date: Yup.date().required("End Date is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
 });
 
 export default function StatementForm() {
-  // let currentDate = new Date().toJSON().slice(0, 10);
-  // console.log(currentDate);
   const [showEmailSend, setShowEmailSend] = useState(false);
   const [message, setMessage] = useState("");
   const submitFunction = async (values) => {
-    console.log(values);
-    const res = await fetch("/api/form-submit", {
-      body: JSON.stringify({
-        ...values,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    try {
+      const res = await fetch("/api/form-submit", {
+        body: JSON.stringify({
+          ...values,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const response = await res;
+      // if (!res.ok) {
+      //   throw new Error(`Failed to submit form: ${res.status}`);
+      // }
+      if (!res.ok) {
+        console.log(`Failed to submit form: ${res.status}`);
+      }
+      console.log(res);
+      const contentType = res.headers.get("content-type");
 
-    if (response.ok) {
+      if (contentType && contentType.includes("application/json")) {
+        const { error } = await res.json();
+        if (error) {
+          setMessage(error);
+        }
+      } else {
+        console.warn("Unexpected response format:", contentType);
+      }
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
       // setShowEmailSend(true);
-    }
-
-    const { error } = await res.json();
-
-    if (error) {
-      setMessage(error);
+    } catch (error) {
+      console.error(error.message);
     }
   };
+
   return (
     <>
       <div className={`formikForm__container ${showEmailSend ? "active" : ""}`}>
@@ -73,7 +85,11 @@ export default function StatementForm() {
               type="email"
             />
             <button type="submit">Submit</button>
-            {message ? <span className="error">{message}</span> : ""}
+            {message ? (
+              <span className="error">{message}</span>
+            ) : (
+              <div>addddddddddddd</div>
+            )}
           </Form>
         </Formik>
       </div>

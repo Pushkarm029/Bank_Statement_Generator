@@ -130,15 +130,21 @@ export async function POST(req) {
 
       //sending email
     });
-    const sendEmail = async (transporter,mailOptions) => {
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully");
-      } catch (error) {
-        return new Response({ error: error});
-      }
+  const sendEmail = async (transporter, mailOptions) => {
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("Email sent successfully");
+      return { success: true }; // Return a success object instead of a string
+    } catch (error) {
+      console.error("Error sending email:", error.message);
+      throw new Error("Failed to send email");
     }
+  };
 
-    sendEmail(transporter,mailOptions);
-  return new Response({ message: "Transaction history sent successfully" });
+  // Assuming transporter and mailOptions are defined somewhere before calling sendEmail
+  const result = await sendEmail(transporter, mailOptions);
+  return new Response({
+    message: "Transaction history sent successfully",
+    result,
+  });
 }
