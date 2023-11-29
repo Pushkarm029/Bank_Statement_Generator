@@ -6,7 +6,29 @@ export async function POST(req) {
   const data = await req.json();
   const { start_date, end_date, email } = data;
   const csvData = [];
-
+  const nodemailer = require("nodemailer");
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: req.body.email,
+    subject: "Bank Statement",
+    text: "Bank Statement",
+    attachments: [
+      {
+        filename: `${data.email}.pdf`,
+        path: `${data.email}.pdf`,
+      },
+    ],
+  };
   fs.createReadStream("./database/data.csv")
     .pipe(csv())
     .on("data", (row) => csvData.push(row))
@@ -22,8 +44,7 @@ export async function POST(req) {
         );
       });
 
-
-    //   generating PDF
+      //   generating PDF
       const pdfDoc = await PDFDocument.create();
       const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
       const page = pdfDoc.addPage();
@@ -107,5 +128,15 @@ export async function POST(req) {
 
       //sending email
     });
+    const sendEmail = async (transporter,mailOptions) => {
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully");
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    sendEmail(transporter,mailOptions);
   return new Response({ message: "Transaction history sent successfully" });
 }
