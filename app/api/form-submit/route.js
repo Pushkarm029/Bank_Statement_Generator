@@ -7,11 +7,13 @@ export async function POST(req) {
   const { start_date, end_date, email } = data;
   const csvData = [];
   const nodemailer = require("nodemailer");
+  // service: "gmail",
+  // host: "smtp.gmail.com",
+  // port: 587,
+  // secure: false,
   const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    host: "smtp.zoho.in",
+    port: 465,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
@@ -19,7 +21,7 @@ export async function POST(req) {
   });
   const mailOptions = {
     from: process.env.EMAIL,
-    to: req.body.email,
+    to: ["pushkarmishra029@gmail.com"],
     subject: "Bank Statement",
     text: "Bank Statement",
     attachments: [
