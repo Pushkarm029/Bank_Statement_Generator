@@ -135,7 +135,7 @@ export async function POST(req) {
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully");
       } catch (error) {
-        console.log(error);
+        return new Response({ error: error});
       }
     }
 
